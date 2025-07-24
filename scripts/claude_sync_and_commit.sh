@@ -2,9 +2,21 @@
 set -e
 
 # Copy files and folders from ~/.claude to project root
-cp -f ~/.claude/CLAUDE.md ./CLAUDE.md
-rsync -a --delete ~/.claude/commands ./ || cp -r ~/.claude/commands ./ # fallback if rsync not available
-rsync -a --delete ~/.claude/agents ./ || cp -r ~/.claude/agents ./    # fallback if rsync not available
+
+# Copy CLAUDE.md if it exists
+if [ -f ~/.claude/CLAUDE.md ]; then
+  cp -f ~/.claude/CLAUDE.md ./CLAUDE.md
+fi
+
+# Copy commands folder if it exists
+if [ -d ~/.claude/commands ]; then
+  rsync -a --delete ~/.claude/commands ./ 2>/dev/null || cp -r ~/.claude/commands ./ 
+fi
+
+# Copy agents folder if it exists
+if [ -d ~/.claude/agents ]; then
+  rsync -a --delete ~/.claude/agents ./ 2>/dev/null || cp -r ~/.claude/agents ./
+fi
 
 # Stage the changes
 git add CLAUDE.md commands agents
