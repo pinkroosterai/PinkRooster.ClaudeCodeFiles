@@ -45,12 +45,18 @@ fi
 if [ "$DRY_RUN" -eq 1 ]; then
   # Create a temporary worktree for dry run
   DRY_RUN_WORKTREE=".claude_dry_run_worktree"
-  if [ -d "$DRY_RUN_WORKTREE" ]; then
+  DRY_RUN_BRANCH="claude-dry-run-tmp"
+  # Remove worktree and branch if they exist
+  if git worktree list | grep -q "$DRY_RUN_WORKTREE"; then
     echo "[DRY RUN] Removing existing dry run worktree at $DRY_RUN_WORKTREE"
     git worktree remove --force "$DRY_RUN_WORKTREE"
   fi
-  echo "[DRY RUN] Creating worktree at $DRY_RUN_WORKTREE"
-  git worktree add "$DRY_RUN_WORKTREE"
+  if git branch --list | grep -q "$DRY_RUN_BRANCH"; then
+    echo "[DRY RUN] Removing existing dry run branch $DRY_RUN_BRANCH"
+    git branch -D "$DRY_RUN_BRANCH"
+  fi
+  echo "[DRY RUN] Creating worktree at $DRY_RUN_WORKTREE on branch $DRY_RUN_BRANCH"
+  git worktree add -b "$DRY_RUN_BRANCH" "$DRY_RUN_WORKTREE"
   pushd "$DRY_RUN_WORKTREE" > /dev/null
 
   # Simulate the copy operations in the worktree
@@ -75,6 +81,9 @@ if [ "$DRY_RUN" -eq 1 ]; then
   popd > /dev/null
   echo "[DRY RUN] Cleaning up dry run worktree at $DRY_RUN_WORKTREE"
   git worktree remove --force "$DRY_RUN_WORKTREE"
+  if git branch --list | grep -q "$DRY_RUN_BRANCH"; then
+    git branch -D "$DRY_RUN_BRANCH"
+  fi
 
   exit 0
 fi
