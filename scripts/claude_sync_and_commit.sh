@@ -88,8 +88,18 @@ if [ "$DRY_RUN" -eq 1 ]; then
   exit 0
 fi
 
-# Stage the changes
-git add CLAUDE.md commands agents
+# Stage the changes if they exist
+ADD_PATHS=()
+[ -f CLAUDE.md ] && ADD_PATHS+=("CLAUDE.md")
+[ -d commands ] && ADD_PATHS+=("commands")
+[ -d agents ] && ADD_PATHS+=("agents")
+
+if [ "${#ADD_PATHS[@]}" -eq 0 ]; then
+  echo "No files to add or commit."
+  exit 0
+fi
+
+git add "${ADD_PATHS[@]}"
 
 # Get the git diff for the staged changes
 CHANGES=$(git diff --cached)
