@@ -113,8 +113,8 @@ fi
 PROMPT="Write a concise, clear git commit message for the following changes:\n\n$CHANGES"
 
 # Use Claude API to generate commit message (requires 'claude' CLI tool or similar)
-# Replace the following line with your actual Claude API/CLI call if different
-COMMIT_MSG=$(claude chat --system "You are a helpful commit message generator." --user "$PROMPT" --output text)
+# This version uses the most common Claude CLI syntax (no --system/--user flags)
+COMMIT_MSG=$(echo -e "$PROMPT" | claude --output text)
 
 if [ -z "$COMMIT_MSG" ]; then
   echo "Failed to generate commit message."
