@@ -43,10 +43,39 @@ if [ -d ~/.claude/agents ]; then
 fi
 
 if [ "$DRY_RUN" -eq 1 ]; then
-  echo "[DRY RUN] Would stage changes: git add CLAUDE.md commands agents"
+  # Create a temporary worktree for dry run
+  DRY_RUN_WORKTREE=".claude_dry_run_worktree"
+  if [ -d "$DRY_RUN_WORKTREE" ]; then
+    echo "[DRY RUN] Removing existing dry run worktree at $DRY_RUN_WORKTREE"
+    git worktree remove --force "$DRY_RUN_WORKTREE"
+  fi
+  echo "[DRY RUN] Creating worktree at $DRY_RUN_WORKTREE"
+  git worktree add "$DRY_RUN_WORKTREE"
+  pushd "$DRY_RUN_WORKTREE" > /dev/null
+
+  # Simulate the copy operations in the worktree
+  if [ -f ~/.claude/CLAUDE.md ]; then
+    echo "[DRY RUN] Would copy ~/.claude/CLAUDE.md to $DRY_RUN_WORKTREE/CLAUDE.md"
+    cp -f ~/.claude/CLAUDE.md ./CLAUDE.md
+  fi
+  if [ -d ~/.claude/commands ]; then
+    echo "[DRY RUN] Would sync/copy ~/.claude/commands to $DRY_RUN_WORKTREE/commands"
+    rsync -a --delete ~/.claude/commands ./ 2>/dev/null || cp -r ~/.claude/commands ./
+  fi
+  if [ -d ~/.claude/agents ]; then
+    echo "[DRY RUN] Would sync/copy ~/.claude/agents to $DRY_RUN_WORKTREE/agents"
+    rsync -a --delete ~/.claude/agents ./ 2>/dev/null || cp -r ~/.claude/agents ./
+  fi
+
+  git add CLAUDE.md commands agents 2>/dev/null || true
   echo "[DRY RUN] Would show staged diff:"
-  git diff --cached
+  git diff --cached || true
   echo "[DRY RUN] Would generate commit message and push (skipped in dry run)."
+
+  popd > /dev/null
+  echo "[DRY RUN] Cleaning up dry run worktree at $DRY_RUN_WORKTREE"
+  git worktree remove --force "$DRY_RUN_WORKTREE"
+
   exit 0
 fi
 
