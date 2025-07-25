@@ -1,6 +1,13 @@
-# Claude Code Configuration Files
-
-This repository contains my personal Claude Code configuration files, including custom agents, commands, and global settings.
+<div align="center">
+  <img src="https://via.placeholder.com/300x100/FF69B4/FFFFFF?text=Pink+Rooster+AI" alt="Claude Code Configuration Files Logo" width="300">
+  
+  # Claude Code Configuration Files
+  
+  **Personal Claude Code configuration files, including custom agents, commands, and global settings**
+  
+  [![.NET](https://img.shields.io/badge/.NET-8.0-blue)](https://dotnet.microsoft.com/)
+  [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+</div>
 
 ## Contents
 

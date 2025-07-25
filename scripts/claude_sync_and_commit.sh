@@ -87,7 +87,7 @@ if [ "$DRY_RUN" -eq 1 ]; then
   [ -d agents ] && DRY_ADD_PATHS+=("agents")
   
   if [ "${#DRY_ADD_PATHS[@]}" -gt 0 ]; then
-    git add "${DRY_ADD_PATHS[@]}"
+    git add .
   fi
   echo "[DRY RUN] Would show staged diff:"
   git diff --cached || true
