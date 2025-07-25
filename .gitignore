@@ -1,0 +1,7 @@
+# Claude Code local directories
+.tasks/
+.claude/
+
+# Temporary files
+*.tmp
+*.temp

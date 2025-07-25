@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+# Check for required dependencies
+if ! command -v jq &> /dev/null; then
+  echo "Error: jq is required but not installed. Please install jq and try again."
+  echo "Install with: apt-get install jq (Ubuntu/Debian) or brew install jq (macOS)"
+  exit 1
+fi
+
 DRY_RUN=0
 
 # Parse arguments
@@ -120,13 +127,48 @@ fi
 # Prepare prompt for Claude
 PROMPT="Write a concise, clear git commit message for the following changes:\n\n$CHANGES"
 
-# Use Claude API to generate commit message (requires 'claude' CLI tool or similar)
-# This version uses the most common Claude CLI syntax (no --system/--user flags)
-COMMIT_MSG=$(echo -e "$PROMPT" | claude)
-
-if [ -z "$COMMIT_MSG" ]; then
-  echo "Failed to generate commit message."
-  exit 1
+# Generate commit message using OpenAI API compatible endpoint
+if [ -z "$OPENAI_API_KEY" ]; then
+  echo "Warning: OPENAI_API_KEY environment variable not set. Using fallback commit message."
+  COMMIT_MSG="chore: sync Claude Code configuration files"
+else
+  OPENAI_BASE_URL="${OPENAI_BASE_URL:-https://api.openai.com/v1}"
+  
+  # Create JSON payload using jq for proper escaping
+  JSON_PAYLOAD=$(jq -n \
+    --arg model "gpt-4.1-nano" \
+    --arg system_content "You are a helpful assistant that writes concise, clear git commit messages. Follow conventional commit format when appropriate. Keep messages under 72 characters for the summary line. Respond without any further comments or remarks" \
+    --arg user_content "$PROMPT" \
+    '{
+      model: $model,
+      messages: [
+        {
+          role: "system",
+          content: $system_content
+        },
+        {
+          role: "user", 
+          content: $user_content
+        }
+      ],
+      max_tokens: 100,
+      temperature: 0.3
+    }')
+  
+  # Make API call
+  RESPONSE=$(curl -s -X POST "$OPENAI_BASE_URL/chat/completions" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $OPENAI_API_KEY" \
+    -d "$JSON_PAYLOAD")
+  
+  # Extract commit message from response using jq
+  COMMIT_MSG=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // empty' 2>/dev/null)
+  
+  if [ -z "$COMMIT_MSG" ] || echo "$RESPONSE" | grep -q '"error"'; then
+    echo "Failed to generate commit message via API. Using fallback."
+    echo "API Response: $RESPONSE"
+    COMMIT_MSG="chore: sync Claude Code configuration files"
+  fi
 fi
 
 # Commit and push
