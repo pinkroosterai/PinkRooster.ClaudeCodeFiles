@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://via.placeholder.com/300x100/FF69B4/FFFFFF?text=Pink+Rooster+AI" alt="Claude Code Configuration Files Logo" width="300">
+  <img src="https://github.com/pinkroosterai/Persistify/raw/main/img/logo_transparent.png" alt="PinkRoosterAi.PersistentChatClient Logo" width="300">
   
   # Claude Code Configuration Files
   
