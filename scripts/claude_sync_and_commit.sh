@@ -73,7 +73,15 @@ if [ "$DRY_RUN" -eq 1 ]; then
     rsync -a --delete ~/.claude/agents ./ 2>/dev/null || cp -r ~/.claude/agents ./
   fi
 
-  git add CLAUDE.md commands agents 2>/dev/null || true
+  # Stage the changes that exist in the dry run worktree
+  DRY_ADD_PATHS=()
+  [ -f CLAUDE.md ] && DRY_ADD_PATHS+=("CLAUDE.md")
+  [ -d commands ] && DRY_ADD_PATHS+=("commands")
+  [ -d agents ] && DRY_ADD_PATHS+=("agents")
+  
+  if [ "${#DRY_ADD_PATHS[@]}" -gt 0 ]; then
+    git add "${DRY_ADD_PATHS[@]}"
+  fi
   echo "[DRY RUN] Would show staged diff:"
   git diff --cached || true
   echo "[DRY RUN] Would generate commit message and push (skipped in dry run)."
@@ -114,7 +122,7 @@ PROMPT="Write a concise, clear git commit message for the following changes:\n\n
 
 # Use Claude API to generate commit message (requires 'claude' CLI tool or similar)
 # This version uses the most common Claude CLI syntax (no --system/--user flags)
-COMMIT_MSG=$(echo -e "$PROMPT" | claude --output text)
+COMMIT_MSG=$(echo -e "$PROMPT" | claude)
 
 if [ -z "$COMMIT_MSG" ]; then
   echo "Failed to generate commit message."
@@ -124,17 +132,3 @@ fi
 # Commit and push
 git commit -m "$COMMIT_MSG"
 git push
-#!/bin/bash
-set -e
-
-# Simple test runner for claude_sync_and_commit.sh
-
-echo "Running dry run test..."
-bash scripts/claude_sync_and_commit.sh --dry-run
-
-echo "Dry run test completed."
-
-echo "Running real sync/commit test (will not push if no changes)..."
-bash scripts/claude_sync_and_commit.sh
-
-echo "Real sync/commit test completed."
