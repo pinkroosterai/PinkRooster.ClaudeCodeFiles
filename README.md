@@ -5,7 +5,7 @@
   
   **Personal Claude Code configuration files, including custom agents, commands, and global settings**
   
-  [![.NET](https://img.shields.io/badge/.NET-8.0-blue)](https://dotnet.microsoft.com/)
+
   [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 </div>
 
